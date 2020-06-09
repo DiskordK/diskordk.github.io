@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Suichan</title>
+<meta name="description" content="community">
+<meta name="author" content="DIskord">
+<meta name="categories" content="Art">
+<meta name="robots" content="index, follow">
+<meta name="revisit-after" content="1 day">
+<meta name="generator" content="WYSIWYG Web Builder 14 - http://www.wysiwygwebbuilder.com">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="font-awesome.min.css" rel="stylesheet">
+<link href="Suichan.css" rel="stylesheet">
+<link href="index.css" rel="stylesheet">
+<script src="jquery-1.12.4.min.js"></script>
+<script src="wwb14.min.js"></script>
+<script>
+$(document).ready(function()
+{
+   function LayoutGrid1Scroll()
+   {
+      var $obj = $("#wb_LayoutGrid1");
+      if (!$obj.hasClass("in-viewport") && $obj.inViewPort(false))
+      {
+         $obj.addClass("in-viewport");
+         AnimationResume('wb_FontAwesomeIcon1');
+         AnimationResume('wb_FontAwesomeIcon2');
+         AnimationResume('wb_FontAwesomeIcon3');
+         AnimationResume('wb_FontAwesomeIcon4');
+         AnimationResume('wb_Heading1');
+         AnimationResume('wb_Heading2');
+         AnimationResume('wb_Heading3');
+         AnimationResume('wb_Heading4');
+         AnimationResume('wb_Text1');
+         AnimationResume('wb_Text2');
+         AnimationResume('wb_Text3');
+         AnimationResume('wb_Text4');
+      }
+   }
+   LayoutGrid1Scroll();
+   $(window).scroll(function(event)
+   {
+      LayoutGrid1Scroll();
+   });
+});
+</script>
+</head>
+<body>
+<div id="container">
+</div>
+<div id="PageHeader1" style="position:absolute;text-align:left;left:0px;top:0px;width:100%;height:87px;z-index:7777;">
+<div id="wb_Heading5" style="position:absolute;left:16px;top:10px;width:340px;height:67px;z-index:0;">
+<h1 id="Heading5">Suichan</h1></div>
+</div>
+<div id="wb_LayoutGrid1">
+<div id="LayoutGrid1">
+<div class="row">
+<div class="col-1">
+<div id="wb_FontAwesomeIcon1" style="display:inline-block;width:48px;height:48px;text-align:center;z-index:1;">
+<div id="FontAwesomeIcon1"><i class="fa fa-anchor"></i></div>
+</div>
+<div id="wb_Heading1" style="display:inline-block;width:100%;z-index:2;">
+<h1 id="Heading1">Версия сайта</h1>
+</div>
+<div id="wb_Text1">
+<span style="color:#05386B;font-family:Arial;font-size:17px;">Pre Alpha v.0.2</span>
+</div>
+</div>
+<div class="col-2">
+<div id="wb_FontAwesomeIcon2" style="display:inline-block;width:48px;height:48px;text-align:center;z-index:4;">
+<div id="FontAwesomeIcon2"><i class="fa fa-pagelines"></i></div>
+</div>
+<div id="wb_Heading2" style="display:inline-block;width:100%;z-index:5;">
+<h1 id="Heading2">Changelog</h1>
+</div>
+<div id="wb_Text2">
+<span style="color:#05386B;font-family:Arial;font-size:17px;">v. 0.1. to 0.2. - новая разметка и цветовая схема</span>
+</div>
+</div>
+<div class="col-3">
+<div id="wb_FontAwesomeIcon3" style="display:inline-block;width:48px;height:48px;text-align:center;z-index:7;">
+<div id="FontAwesomeIcon3"><i class="fa fa-bookmark"></i></div>
+</div>
+<div id="wb_Heading3" style="display:inline-block;width:100%;z-index:8;">
+<h1 id="Heading3">Цели</h1>
+</div>
+<div id="wb_Text3">
+<span style="color:#05386B;font-family:Arial;font-size:17px;">Стена с возможностью свободного постинга</span>
+</div>
+</div>
+<div class="col-4">
+<div id="wb_FontAwesomeIcon4" style="display:inline-block;width:48px;height:48px;text-align:center;z-index:10;">
+<div id="FontAwesomeIcon4"><i class="fa fa-binoculars"></i></div>
+</div>
+<div id="wb_Heading4" style="display:inline-block;width:100%;z-index:11;">
+<h1 id="Heading4">Планы</h1>
+</div>
+<div id="wb_Text4">
+<span style="color:#05386B;font-family:Arial;font-size:17px;">Разработка адаптивного дизайна</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
