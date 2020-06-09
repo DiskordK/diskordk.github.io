@@ -1,0 +1,2 @@
+# diskordk.github.io
+Suichan
