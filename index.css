@@ -166,7 +166,7 @@ body
    border: 0px solid #000000;
    padding: 0px 0px 25px 0px;
    margin: 0;
-   text-align: center;
+   text-align: left;
    -webkit-animation: transform-scale-in 1000ms linear 300ms 1 normal both;
    -moz-animation: transform-scale-in 1000ms linear 300ms 1 normal both;
    animation: transform-scale-in 1000ms linear 300ms 1 normal both;
@@ -176,7 +176,7 @@ body
 }
 #wb_Text2 div
 {
-   text-align: center;
+   text-align: left;
 }
 #wb_FontAwesomeIcon2
 {
