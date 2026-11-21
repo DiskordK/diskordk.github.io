@@ -9,6 +9,7 @@
 
   body {
     min-height: 100vh;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -30,6 +31,19 @@
     gap: 12px;
     align-items: center;
   }
+
+  .back-link {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    color: #d8cfae;
+    opacity: .55;
+    text-decoration: none;
+    font-size: 14px;
+    letter-spacing: 1px;
+    z-index: 50;
+  }
+  .back-link:hover { opacity: 1; }
 
   .title {
     font-size: 22px;
@@ -270,11 +284,22 @@
   }
 
   .hint { font-size: 14px; opacity: .5; letter-spacing: 1px; }
+
+  /* компактное поле на телефонах: сундуки меньше, просветы уже */
+  @media (max-width: 700px) {
+    body { gap: 18px; padding-top: 54px; }
+    .board { gap: 26px 24px; }
+    .chest.small { --w: 68px; --h: 49px; }
+    .chest.big   { --w: 92px; --h: 66px; }
+    .stats { gap: 18px; font-size: 16px; }
+    h1, .title { font-size: 17px; letter-spacing: 2px; }
+  }
 </style>
 </head>
 <body>
 
 <header>
+  <a class="back-link" href="/">← на главную</a>
   <div class="title">🏆 Сундуки удачи</div>
   <div class="stats">
     <div>Очки: <span id="score">0</span></div>
