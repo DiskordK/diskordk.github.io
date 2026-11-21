@@ -15,11 +15,89 @@
     padding: 60px 16px;
     gap: 40px;
     background:
-      radial-gradient(ellipse at 50% 0%, #3b2d55 0%, #241a38 45%, #14101f 100%);
+      radial-gradient(ellipse at 50% -10%, #2c2250 0%, #1b1430 50%, #0d0a18 100%);
     font-family: 'Segoe UI', system-ui, sans-serif;
     color: #d8cfae;
+    overflow-x: hidden;
   }
 
+  /* ================= КОСМОС ================= */
+  .space {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* туманности — градиентные пятна с медленной пульсацией */
+  .nebula {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: .35;
+    animation: breathe 12s ease-in-out infinite alternate;
+  }
+  .nebula.n1 {
+    width: 55vw; height: 55vw;
+    top: -15vw; left: -12vw;
+    background: radial-gradient(circle, rgba(120, 80, 200, .55), transparent 65%);
+  }
+  .nebula.n2 {
+    width: 45vw; height: 45vw;
+    bottom: -18vw; right: -10vw;
+    background: radial-gradient(circle, rgba(30, 130, 180, .5), transparent 65%);
+    animation-delay: -6s;
+  }
+  @keyframes breathe {
+    from { opacity: .22; transform: scale(1); }
+    to   { opacity: .45; transform: scale(1.12); }
+  }
+
+  /* слои звёзд для параллакса */
+  .stars { position: absolute; inset: 0; }
+  .stars span {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+  }
+  /* медленный дрейф всего слоя */
+  .stars.l1 { animation: drift 240s linear infinite; }
+  .stars.l2 { animation: drift 150s linear infinite reverse; }
+  @keyframes drift {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-600px, 220px, 0); }
+  }
+
+  /* мерцание отдельных звёзд */
+  .stars .tw {
+    animation: twinkle 2.6s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle {
+    from { opacity: .25; }
+    to   { opacity: 1; }
+  }
+
+  /* падающие звёзды */
+  .meteor {
+    position: absolute;
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, #fff, rgba(255,255,255,0));
+    border-radius: 2px;
+    transform: rotate(28deg);
+    opacity: 0;
+    animation: shoot 9s ease-in infinite;
+  }
+  .meteor.m2 { animation-delay: 4.5s; top: 22%; }
+  @keyframes shoot {
+    0%   { transform: rotate(28deg) translateX(-140px); opacity: 0; }
+    4%   { opacity: .9; }
+    12%  { transform: rotate(28deg) translateX(60vw); opacity: 0; }
+    100% { transform: rotate(28deg) translateX(60vw); opacity: 0; }
+  }
+
+  /* ================= КОНТЕНТ ================= */
   .hero { text-align: center; }
   .hero h1 {
     font-size: 34px;
@@ -52,6 +130,7 @@
     border: 1px solid rgba(212,175,55,.25);
     text-decoration: none;
     color: inherit;
+    backdrop-filter: blur(4px);
     transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
   }
   a.card:hover {
@@ -84,6 +163,15 @@
 </head>
 <body>
 
+<div class="space" aria-hidden="true">
+  <div class="nebula n1"></div>
+  <div class="nebula n2"></div>
+  <div class="stars l1" id="starsA"></div>
+  <div class="stars l2" id="starsB"></div>
+  <div class="meteor"  style="top:12%; left:8%"></div>
+  <div class="meteor m2" style="left:38%"></div>
+</div>
+
 <div class="hero">
   <h1>🎲 Мой игровой уголок</h1>
   <p>Маленькие html5-игры, сделанные для удовольствия</p>
@@ -110,6 +198,30 @@
 </div>
 
 <footer>© diskordk · собрано с ❤ и Mistral Vibe</footer>
+
+<script>
+  /* заполняем два слоя случайными звёздами — без картинок, чистый CSS+JS */
+  function makeStars(id, count, minSize, maxSize) {
+    const box = document.getElementById(id);
+    let html = '';
+    for (let i = 0; i < count; i++) {
+      const size  = minSize + Math.random() * (maxSize - minSize);
+      const x     = Math.random() * 100;
+      const y     = Math.random() * 100;
+      const tw    = Math.random() < 0.55 ? ' tw' : '';          // часть звёзд мерцает
+      const delay = -(Math.random() * 2.6).toFixed(2);          // рассинхрон мерцания
+      html += `<span class="${tw}" style="left:${x}%;top:${y}%;` +
+              `width:${size}px;height:${size}px;` +
+              `opacity:${(.4 + Math.random() * .6).toFixed(2)};` +
+              `animation-delay:${delay}s"></span>`;
+    }
+    box.innerHTML = html;
+  }
+
+  const isMobile = matchMedia('(max-width: 700px)').matches;
+  makeStars('starsA', isMobile ? 70  : 140, 1, 2);   // дальний план
+  makeStars('starsB', isMobile ? 30  : 60,  2, 3.5); // ближний план, покрупнее
+</script>
 
 </body>
 </html>
