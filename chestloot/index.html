@@ -299,10 +299,11 @@
 <div class="banner" id="overBanner">
   <div class="big-emoji">⏳</div>
   <h2>Время вышло!</h2>
-  <div class="sub">Ваш счёт: <span id="finalScore">0</span></div>
+  <div class="sub">За этот забег: <span id="finalScore">0</span> · всего в копилке: <span id="totalScore">0</span></div>
   <button class="btn" id="restartBtn">Ещё раз</button>
 </div>
 
+<script src="../assets/wallet.js"></script>
 <script>
 /* ================= НАСТРОЙКИ ================= */
 const LOOT       = ['🍎','🥕','🍇','🌽','🍉','🍆']; // 6 типов по 2 = 12
@@ -313,8 +314,10 @@ const SHOW_MS    = 1100;      // сколько висит открытый не
 const SPAWN_MS   = 3200;      // пауза перед новым полем
 
 /* ================= СОСТОЯНИЕ ================= */
-let score = 0;
-let stars = 0;
+/* score — зеркало общего кошелька (localStorage), stars — ранг из кошелька */
+let runScore  = 0;              // заработано за текущий забег (с последнего «время вышло»)
+let score     = DKWallet.points();
+let stars     = DKWallet.stars();
 let firstPick = null;        // { el, id }
 let mismatchTimer = null;
 let locked = false;          // блокировка на время переходов
@@ -328,6 +331,10 @@ const timerBar   = document.getElementById('timerBar');
 const roundBn    = document.getElementById('roundBanner');
 const overBn     = document.getElementById('overBanner');
 const finalScore = document.getElementById('finalScore');
+
+/* начальный рендер из кошелька: очки не пропадают после ухода со страницы */
+scoreEl.textContent = score;
+renderStars();
 
 /* ================= ПОЛОСА ВРЕМЕНИ ================= */
 function buildTimerBar() {
@@ -455,8 +462,13 @@ function onChestClick(el) {
   }
 }
 
+function renderStars() {
+  starsEl.textContent = '⭐'.repeat(Math.min(stars, 10)) + (stars > 10 ? ' ×' + stars : '');
+}
+
 function addScore(n, at) {
-  score += n;
+  score = DKWallet.add(n);   // очки сразу живут в общем кошельке
+  runScore += n;
   scoreEl.textContent = score;
   const pop = document.createElement('div');
   pop.className = 'score-pop';
@@ -470,8 +482,8 @@ function checkBoardCleared() {
   locked = true;
   clearInterval(timerId);
 
-  stars = Math.min(stars + 1, 50);
-  starsEl.textContent = '⭐'.repeat(Math.min(stars, 10)) + (stars > 10 ? stars : '');
+  stars = Math.min(DKWallet.addStars(1), 50);
+  renderStars();
 
   roundBn.classList.add('show');
   setTimeout(() => {
@@ -485,16 +497,25 @@ function checkBoardCleared() {
 function gameOver() {
   clearInterval(timerId);
   locked = true;
-  finalScore.textContent = score;
+  finalScore.textContent = runScore;
+  document.getElementById('totalScore').textContent = score;
+  // кошелёк НЕ обнуляем — очки навсегда, будущее пополнение других игр
   overBn.classList.add('show');
 }
 
 document.getElementById('restartBtn').addEventListener('click', () => {
-  score = 0;
-  scoreEl.textContent = 0;
+  runScore = 0;
   overBn.classList.remove('show');
   spawnBoard();
   startTimer();
+});
+
+/* изменения кошелька из других вкладок подхватываются живьём */
+DKWallet.onChange(p => {
+  score = p.points;
+  stars = p.stars;
+  scoreEl.textContent = score;
+  renderStars();
 });
 
 /* ================= СТАРТ ================= */
