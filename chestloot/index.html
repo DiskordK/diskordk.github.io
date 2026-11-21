@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сундуки удачи</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 12px 40px;
+    gap: 26px;
+    overflow-x: hidden;
+    background:
+      radial-gradient(ellipse at 50% 15%, #3b2d55 0%, #241a38 45%, #14101f 100%);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #d8cfae;
+  }
+
+  /* ================= ШАПКА ================= */
+  header {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .title {
+    font-size: 22px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #e8d9a0;
+    text-shadow: 0 2px 8px rgba(0,0,0,.6);
+  }
+
+  .stats {
+    display: flex;
+    gap: 28px;
+    font-size: 20px;
+    text-shadow: 0 2px 6px rgba(0,0,0,.5);
+  }
+  .stats .stars { letter-spacing: 2px; font-size: 22px; }
+
+  /* ---------- полоса золотых делений ---------- */
+  .timer-bar {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(212,175,55,.35);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,.6);
+  }
+  .timer-bar .seg {
+    font-size: 20px;
+    line-height: 1;
+    color: #ffd75e;
+    text-shadow: 0 0 8px rgba(255, 200, 60, .8);
+    transition: opacity .4s ease, transform .4s ease, color .4s ease;
+  }
+  .timer-bar .seg.dim {
+    color: #5a4a26;
+    text-shadow: none;
+    opacity: .35;
+    transform: scale(.7);
+  }
+  .timer-bar .seg.h {
+    font-size: 26px;
+    color: #ffe9a8;
+  }
+
+  /* ================= ПОЛЕ ================= */
+  .board {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    gap: 44px 84px;
+    align-items: end;
+    justify-content: center;
+    perspective: 900px;
+  }
+
+  .row-spacer { height: 6px; }
+
+  .chest {
+    position: relative;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    transition: transform .22s ease, filter .22s ease;
+    transform-origin: bottom center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .chest:hover { transform: scale(1.06); filter: brightness(1.12); }
+  .chest:active { transform: scale(.96); }
+
+  .chest.small  { --w: 92px;  --h: 66px; }
+  .chest.big    { --w: 128px; --h: 92px; }
+
+  .chest.tilt-left   { transform: rotate(-4deg); }
+  .chest.tilt-left:hover  { transform: rotate(-4deg) scale(1.06); }
+  .chest.tilt-right  { transform: rotate(4deg); }
+  .chest.tilt-right:hover { transform: rotate(4deg) scale(1.06); }
+
+  /* крышка */
+  .lid {
+    width: var(--w);
+    height: calc(var(--h) * .45);
+    background: repeating-linear-gradient(90deg, #7a4d20 0 12px, #8a5a28 12px 17px);
+    border: 4px solid #4a2d10;
+    border-bottom: none;
+    border-radius: calc(var(--w) * .3) calc(var(--w) * .3) 5px 5px / calc(var(--h) * .75) calc(var(--h) * .75) 5px 5px;
+    transform-origin: bottom left;
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+    position: relative;
+    z-index: 2;
+  }
+  .chest.open .lid { transform: rotateX(105deg) translateY(-3px); }
+
+  /* корпус */
+  .body {
+    width: var(--w);
+    height: calc(var(--h) * .55);
+    background: repeating-linear-gradient(90deg, #6b4018 0 12px, #7a4d20 12px 17px);
+    border: 4px solid #4a2d10;
+    border-top: none;
+    border-radius: 0 0 9px 9px;
+    position: relative;
+  }
+  .body::before, .body::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 8px;
+    background: linear-gradient(180deg, #cfa63a, #9a7a1e);
+  }
+  .body::before { left: 10%; }
+  .body::after  { right: 10%; }
+
+  /* замок */
+  .lock {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--h) * .42);
+    transform: translateX(-50%);
+    width: 22px;
+    height: 26px;
+    background: linear-gradient(180deg, #ffd75e, #b8912a);
+    border: 3px solid #6b5010;
+    border-radius: 5px 5px 8px 8px;
+    z-index: 3;
+    transition: transform .2s ease;
+  }
+  .chest.open .lock { transform: translateX(-50%) translateY(-9px); }
+
+  /* нутро */
+  .inside {
+    position: absolute;
+    left: 5px; right: 5px;
+    top: calc(var(--h) * .4);
+    height: 12px;
+    background: radial-gradient(ellipse at 50% 100%, #ffe9a8 0%, #c9962f 70%, #8a621b 100%);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity .3s ease .12s;
+    z-index: 1;
+  }
+  .chest.open .inside { opacity: 1; }
+
+  /* предмет */
+  .item {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--h) * .5);
+    font-size: calc(var(--w) * .44);
+    line-height: 1;
+    z-index: 10;
+    pointer-events: none;
+    transform: translateX(-50%) scale(.2);
+    opacity: 0;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,.5));
+  }
+  .chest.open .item {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+    transition: transform .35s cubic-bezier(.25,.9,.3,1.4), opacity .15s ease;
+  }
+
+  /* исчезновение пары */
+  .chest.vanish { animation: vanish .55s ease forwards; pointer-events: none; }
+  @keyframes vanish {
+    0%   { filter: brightness(2) drop-shadow(0 0 18px #ffe9a8); }
+    100% { transform: scale(.1) rotate(15deg); opacity: 0; filter: brightness(3); }
+  }
+
+  /* очки за пару */
+  .score-pop {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--h) * .9);
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffe9a8;
+    text-shadow: 0 0 10px rgba(255,200,60,.9), 0 2px 4px rgba(0,0,0,.6);
+    pointer-events: none;
+    animation: scoreUp 1s ease-out forwards;
+    z-index: 20;
+  }
+  @keyframes scoreUp {
+    0%   { transform: translateX(-50%) translateY(0); opacity: 0; }
+    20%  { opacity: 1; }
+    100% { transform: translateX(-50%) translateY(-55px); opacity: 0; }
+  }
+
+  /* ================= ОВЕРЛЕИ ================= */
+  .banner {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: rgba(10, 6, 20, .78);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .4s ease;
+    text-align: center;
+    padding: 20px;
+  }
+  .banner.show { opacity: 1; pointer-events: auto; }
+
+  .banner h2 {
+    font-size: 34px;
+    color: #ffe9a8;
+    text-shadow: 0 0 20px rgba(255,200,60,.5);
+  }
+  .banner .sub { font-size: 18px; opacity: .8; }
+  .banner .btn {
+    margin-top: 10px;
+    padding: 12px 30px;
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: #2c1e05;
+    background: linear-gradient(180deg, #ffd75e, #d4a937);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(255,200,60,.35);
+    transition: transform .15s ease;
+  }
+  .banner .btn:hover { transform: scale(1.06); }
+  .banner .btn:active { transform: scale(.96); }
+
+  /* баннер «+1 звезда» */
+  .banner.star .btn { display: none; }
+  .banner.star .big-emoji { font-size: 70px; animation: starSpin 1.2s ease; }
+  @keyframes starSpin {
+    0% { transform: scale(0) rotate(-360deg); }
+    70% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+
+  .hint { font-size: 14px; opacity: .5; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title">🏆 Сундуки удачи</div>
+  <div class="stats">
+    <div>Очки: <span id="score">0</span></div>
+    <div class="stars">Ранг: <span id="stars">☆☆☆☆☆</span></div>
+  </div>
+  <div class="timer-bar" id="timerBar" title="Время раунда"></div>
+</header>
+
+<div class="board" id="board"></div>
+
+<div class="hint">Найди пары: открой два одинаковых сундука подряд!</div>
+
+<!-- Баннер «поле чистое» -->
+<div class="banner star" id="roundBanner">
+  <div class="big-emoji">⭐</div>
+  <h2>Поле чистое!</h2>
+  <div class="sub">Ранг повышен...</div>
+  <div class="sub">Новое поле появится через мгновение</div>
+</div>
+
+<!-- Баннер «время вышло» -->
+<div class="banner" id="overBanner">
+  <div class="big-emoji">⏳</div>
+  <h2>Время вышло!</h2>
+  <div class="sub">Ваш счёт: <span id="finalScore">0</span></div>
+  <button class="btn" id="restartBtn">Ещё раз</button>
+</div>
+
+<script>
+/* ================= НАСТРОЙКИ ================= */
+const LOOT       = ['🍎','🥕','🍇','🌽','🍉','🍆']; // 6 типов по 2 = 12
+const ROWS       = 4, COLS = 3;
+const ROUND_TIME = 60;        // секунд на раунд
+const SEGMENTS   = 14;        // золотых делений в полосе
+const SHOW_MS    = 1100;      // сколько висит открытый не-парный предмет
+const SPAWN_MS   = 3200;      // пауза перед новым полем
+
+/* ================= СОСТОЯНИЕ ================= */
+let score = 0;
+let stars = 0;
+let firstPick = null;        // { el, id }
+let mismatchTimer = null;
+let locked = false;          // блокировка на время переходов
+let timerId = null;
+let timeLeft = ROUND_TIME;
+
+const board      = document.getElementById('board');
+const scoreEl    = document.getElementById('score');
+const starsEl    = document.getElementById('stars');
+const timerBar   = document.getElementById('timerBar');
+const roundBn    = document.getElementById('roundBanner');
+const overBn     = document.getElementById('overBanner');
+const finalScore = document.getElementById('finalScore');
+
+/* ================= ПОЛОСА ВРЕМЕНИ ================= */
+function buildTimerBar() {
+  timerBar.innerHTML = '';
+  for (let i = 0; i < SEGMENTS; i++) {
+    const s = document.createElement('span');
+    s.className = 'seg';
+    s.textContent = (i === Math.floor(SEGMENTS / 2)) ? '✦' : '◆'; // центральная крупнее
+    timerBar.appendChild(s);
+  }
+}
+function renderTimer() {
+  const frac = Math.max(0, timeLeft / ROUND_TIME);
+  const lit  = Math.ceil(frac * SEGMENTS);
+  [...timerBar.children].forEach((seg, i) => {
+    seg.classList.toggle('dim', i >= lit);
+  });
+}
+function startTimer() {
+  timeLeft = ROUND_TIME;
+  renderTimer();
+  clearInterval(timerId);
+  timerId = setInterval(() => {
+    timeLeft -= 0.1;
+    if (timeLeft <= 0) { gameOver(); return; }
+    renderTimer();
+  }, 100);
+}
+
+/* ================= ПОЛЕ ================= */
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function makeChest(id, emoji, col) {
+  const c = document.createElement('button');
+  c.className = 'chest'; // размер/наклон по колонке ниже
+  c.innerHTML = '<div class="lid"></div><div class="body"></div>' +
+                '<div class="lock"></div><div class="inside"></div>' +
+                '<div class="item"></div>';
+  c.dataset.id = id;
+  c.dataset.emoji = emoji;
+
+  // оформление по колонке: центральная — большой сундук, боковые — меньше и с наклоном
+  if (col === 1)      c.classList.add('big');
+  else { c.classList.add('small'); c.classList.add(col === 0 ? 'tilt-left' : 'tilt-right'); }
+
+  c.addEventListener('click', () => onChestClick(c));
+  return c;
+}
+
+function spawnBoard() {
+  board.innerHTML = '';
+  firstPick = null;
+  if (mismatchTimer) clearTimeout(mismatchTimer.timeout);
+  mismatchTimer = null;
+
+  const deck = shuffle([...LOOT, ...LOOT]); // 6 пар -> 12 сундуков
+  let idx = 0;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      board.appendChild(makeChest(idx++, deck[r * COLS + c], c));
+    }
+  }
+  locked = false;
+}
+
+/* ================= ЛОГИКА КЛИКА ================= */
+function closeChest(el) {
+  el.classList.remove('open');
+  el.querySelector('.item').textContent = '';
+}
+
+function resolvePending() {
+  if (!mismatchTimer) return;
+  clearTimeout(mismatchTimer.timeout);
+  closeChest(mismatchTimer.firstEl);
+  closeChest(mismatchTimer.el);
+  firstPick = null;
+  mismatchTimer = null;
+}
+
+function onChestClick(el) {
+  if (locked) return;
+  if (el.classList.contains('open') || el.classList.contains('vanish')) return;
+
+  resolvePending(); // если ждали закрытия не-пары — закрываем сразу и открываем новый
+
+  el.classList.add('open');
+  el.querySelector('.item').textContent = el.dataset.emoji;
+
+  if (!firstPick) {
+    firstPick = { el, emoji: el.dataset.emoji };
+    return;
+  }
+
+  const first = firstPick;
+  firstPick = null;
+
+  if (first.emoji === el.dataset.emoji) {
+    // !!! ПАРА !!!
+    setTimeout(() => {
+      first.el.classList.add('vanish');
+      el.classList.add('vanish');
+      addScore(10, el);
+      checkBoardCleared();
+    }, 350);
+  } else {
+    // не пара: прячем с задержкой
+    const firstEl = first.el;
+    mismatchTimer = {
+      timeout: setTimeout(() => {
+        closeChest(firstEl);
+        closeChest(el);
+        mismatchTimer = null;
+      }, SHOW_MS),
+      firstEl,
+      el
+    };
+  }
+}
+
+function addScore(n, at) {
+  score += n;
+  scoreEl.textContent = score;
+  const pop = document.createElement('div');
+  pop.className = 'score-pop';
+  pop.textContent = '+' + n;
+  at.appendChild(pop);
+  setTimeout(() => pop.remove(), 1000);
+}
+
+function checkBoardCleared() {
+  if (document.querySelector('.chest:not(.vanish)')) return;
+  locked = true;
+  clearInterval(timerId);
+
+  stars = Math.min(stars + 1, 50);
+  starsEl.textContent = '⭐'.repeat(Math.min(stars, 10)) + (stars > 10 ? stars : '');
+
+  roundBn.classList.add('show');
+  setTimeout(() => {
+    roundBn.classList.remove('show');
+    spawnBoard();
+    startTimer();
+  }, SPAWN_MS);
+}
+
+/* ================= КОНЕЦ РАУНДА ================= */
+function gameOver() {
+  clearInterval(timerId);
+  locked = true;
+  finalScore.textContent = score;
+  overBn.classList.add('show');
+}
+
+document.getElementById('restartBtn').addEventListener('click', () => {
+  score = 0;
+  scoreEl.textContent = 0;
+  overBn.classList.remove('show');
+  spawnBoard();
+  startTimer();
+});
+
+/* ================= СТАРТ ================= */
+buildTimerBar();
+spawnBoard();
+startTimer();
+</script>
+
+</body>
+</html>

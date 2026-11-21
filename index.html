@@ -1,12 +1,115 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My little corner</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>diskordk — мини-игры</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 16px;
+    gap: 40px;
+    background:
+      radial-gradient(ellipse at 50% 0%, #3b2d55 0%, #241a38 45%, #14101f 100%);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #d8cfae;
+  }
+
+  .hero { text-align: center; }
+  .hero h1 {
+    font-size: 34px;
+    letter-spacing: 3px;
+    color: #e8d9a0;
+    text-shadow: 0 2px 12px rgba(0,0,0,.6);
+  }
+  .hero p {
+    margin-top: 10px;
+    opacity: .65;
+    letter-spacing: 1px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 240px);
+    gap: 24px;
+    justify-content: center;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  a.card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 26px 22px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(212,175,55,.25);
+    text-decoration: none;
+    color: inherit;
+    transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+  }
+  a.card:hover {
+    transform: translateY(-6px);
+    background: rgba(255,215,94,.09);
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  }
+
+  .card .emoji { font-size: 52px; text-align: center; line-height: 1; }
+  .card h2 {
+    font-size: 19px;
+    color: #ffe9a8;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  .card p { font-size: 14px; opacity: .7; text-align: center; }
+
+  .card.soon {
+    opacity: .45;
+    pointer-events: none;
+  }
+
+  footer {
+    margin-top: auto;
+    font-size: 13px;
+    opacity: .4;
+    letter-spacing: 1px;
+  }
+</style>
 </head>
 <body>
-    <h1>Сайт работает</h1>
-    <p>Здесь будут мои мини-игры.</p>
+
+<div class="hero">
+  <h1>🎲 Мой игровой уголок</h1>
+  <p>Маленькие html5-игры, сделанные для удовольствия</p>
+</div>
+
+<div class="grid">
+  <a class="card" href="chestloot/">
+    <div class="emoji">🎁</div>
+    <h2>Сундуки удачи</h2>
+    <p>Мемори-игра: запоминай, где какой лут, и открывай сундуки парами на время</p>
+  </a>
+
+  <a class="card soon" href="#">
+    <div class="emoji">👾</div>
+    <h2>?</h2>
+    <p>Следующий проект — скоро</p>
+  </a>
+
+  <a class="card soon" href="#">
+    <div class="emoji">🔮</div>
+    <h2>?</h2>
+    <p>Следующий проект — скоро</p>
+  </a>
+</div>
+
+<footer>© diskordk · собрано с ❤ и Mistral Vibe</footer>
+
 </body>
 </html>
