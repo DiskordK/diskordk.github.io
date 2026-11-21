@@ -224,16 +224,18 @@
     cursor: pointer;
   }
   .banner .btn:hover { transform: scale(1.05); }
-  .banner a.btn-link {
-    padding: 12px 30px;
-    font-size: 17px;
-    color: #2c1e05;
-    background: linear-gradient(180deg, #ffd75e, #d4a937);
+
+  .hint-pill {
+    display: none;
+    padding: 10px 18px;
+    font-size: 14px;
     border-radius: 999px;
-    text-decoration: none;
-    display: inline-block;
-    margin-top: 6px;
+    background: rgba(130, 30, 30, .18);
+    border: 1px solid rgba(255, 120, 120, .35);
+    color: #f0c8c8;
   }
+  .hint-pill.show { display: block; }
+  .hint-pill a { color: #ffd75e; }
 
   @media (max-width: 620px) {
     .machine { gap: 26px; }
@@ -285,12 +287,9 @@
   <button class="btn" id="resOk">Ок</button>
 </div>
 
-<!-- замок: не хватает очков -->
-<div class="banner show" id="gateBanner">
-  <div class="big-emoji">🔒</div>
-  <h2>Нужен пропуск</h2>
-  <div class="sub">Минимальная ставка — 50 очков.<br>Заработай их в «Сундуках удачи»!</div>
-  <a class="btn-link" href="/chestloot/">🎁 В сундуки</a>
+<!-- мягкая подсказка вместо заглушки: сама исчезнет, когда хватит очков -->
+<div id="stakeHint" class="hint-pill">
+  🔒 Нужно минимум 50 очков — заработай их в <a href="/chestloot/">сундуках удачи</a>
 </div>
 
 <script src="/assets/wallet.js"></script>
@@ -306,7 +305,7 @@ const wheelEl  = document.getElementById('wheel');
 const leverEl  = document.getElementById('lever');
 const stakeEl  = document.getElementById('stake');
 const balanceEl= document.getElementById('balance');
-const gateBn   = document.getElementById('gateBanner');
+const hintEl   = document.getElementById('stakeHint'); // пилюля-подсказка (неблокирующая)
 const resBn    = document.getElementById('resultBanner');
 
 /* ================= ЗВУКИ (Web Audio, без файлов) — см. sounds.js ================= */
@@ -424,7 +423,7 @@ document.querySelectorAll('.chip').forEach(chip => {
 function spin() {
   if (spinning) return;
   const stake = readStake();
-  if (stake === null) { gateBn.classList.add('show'); sfx.burn(); return; }
+  if (stake === null) { refreshGate(DKWallet.points()); return; } // не хватает — подсказка уже видна
 
   spinning = true;
   leverEl.classList.add('cool');
@@ -497,23 +496,28 @@ leverEl.addEventListener('click', spin);
 document.getElementById('resOk').addEventListener('click', () => {
   resBn.classList.remove('show');
   spinning = false;
-  leverEl.classList.remove('cool');
+  refreshGate(DKWallet.points()); // вдруг после спина баланс упал ниже порога
 });
 DKWallet.onChange(p => {
   updateBalance(p.points);
-  maybeGate(p.points);
+  refreshGate(p.points);
 });
 
-function maybeGate(points) {
+function refreshGate(points) {
   const blocked = points < MIN_STAKE && !spinning;
-  gateBn.classList.toggle('show', blocked);
+  hintEl.classList.toggle('show', blocked);
+  leverEl.classList.toggle('cool', blocked || spinning);
 }
 
 /* ================= СТАРТ ================= */
+try {
+  buildWheel();
+} catch (e) {
+  console.error('Не удалось собрать колесо:', e); // страница остаётся живой даже при сбое
+}
 const startPoints = DKWallet.points();
 updateBalance(startPoints);
-buildWheel();
-if (startPoints >= MIN_STAKE) gateBn.classList.remove('show');
+refreshGate(startPoints);
 </script>
 
 </body>
