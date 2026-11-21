@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Колесо удачи</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 14px 50px;
+    gap: 26px;
+    background:
+      radial-gradient(ellipse at 50% 0%, #33224d 0%, #1e1433 50%, #0e0a1a 100%);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #d8cfae;
+    overflow-x: hidden;
+  }
+
+  .topbar {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .topbar a {
+    color: #d8cfae;
+    opacity: .6;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .topbar a:hover { opacity: 1; }
+  .balance-chip {
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(212,175,55,.4);
+    color: #ffe9a8;
+    font-size: 16px;
+  }
+
+  h1 {
+    font-size: 26px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #e8d9a0;
+    text-shadow: 0 2px 10px rgba(0,0,0,.6);
+  }
+
+  /* ================= МАШИНА ================= */
+  .machine {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 56px;
+  }
+
+  .wheel-zone { position: relative; width: 340px; height: 340px; }
+
+  .pointer {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 34px;
+    color: #ffd75e;
+    z-index: 5;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,.6));
+  }
+
+  .wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 10px solid #4a2d10;
+    box-shadow: 0 0 0 6px #b8912a, 0 14px 40px rgba(0,0,0,.6);
+    position: relative;
+  }
+  .wheel .seg-label {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    font-size: 15px;
+    font-weight: bold;
+    color: #ffe9a8;
+    text-shadow: 0 1px 3px rgba(0,0,0,.8);
+    white-space: nowrap;
+  }
+  .wheel .hub {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffe9a8, #b8912a 70%);
+    border: 5px solid #4a2d10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    z-index: 4;
+  }
+
+  /* ================= РЫЧАГ ================= */
+  .lever {
+    position: relative;
+    width: 70px;
+    height: 210px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lever-slot {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 26px; height: 46px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #3a3a42, #22222a);
+    border: 3px solid #55555f;
+  }
+  .lever-arm {
+    position: absolute;
+    bottom: 26px; left: 50%;
+    width: 10px; height: 150px;
+    margin-left: -5px;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #d7d7dd, #7c7c86);
+    transform-origin: bottom center;
+    transition: transform .45s cubic-bezier(.34,1.3,.64,1);
+    z-index: 2;
+  }
+  .lever-ball {
+    position: absolute;
+    top: -20px; left: 50%;
+    transform: translateX(-50%);
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #ff8f8f, #d21f1f 55%, #7a0d0d);
+    box-shadow: 0 4px 12px rgba(0,0,0,.5), inset -4px -6px 10px rgba(0,0,0,.35);
+  }
+  .lever.pulled .lever-arm { transform: rotate(135deg); }
+  .lever.cool { pointer-events: none; }
+  .lever.cool .lever-arm { transition: none; }
+  .lever:not(.cool):hover .lever-ball { filter: brightness(1.15); }
+
+  /* ================= СТАВКА ================= */
+  .stake-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stake-row label { font-size: 14px; opacity: .7; }
+  #stake {
+    width: 110px;
+    padding: 10px 12px;
+    font-size: 18px;
+    text-align: center;
+    color: #ffe9a8;
+    background: rgba(0,0,0,.4);
+    border: 1px solid rgba(212,175,55,.4);
+    border-radius: 10px;
+    outline: none;
+  }
+  #stake:focus { border-color: #ffd75e; }
+  .chip {
+    padding: 9px 14px;
+    font-size: 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(212,175,55,.4);
+    background: rgba(0,0,0,.3);
+    color: #d8cfae;
+    cursor: pointer;
+  }
+  .chip:hover { background: rgba(255,215,94,.12); }
+
+  .legend {
+    max-width: 520px;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 14px;
+    opacity: .75;
+    text-align: center;
+  }
+
+  /* ================= БАННЕРЫ ================= */
+  .banner {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: rgba(8, 5, 16, .82);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s ease;
+    text-align: center;
+    padding: 20px;
+  }
+  .banner.show { opacity: 1; pointer-events: auto; }
+  .banner .big-emoji { font-size: 72px; animation: pop .5s cubic-bezier(.25,.9,.3,1.4); }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  .banner h2 { font-size: 28px; color: #ffe9a8; }
+  .banner .sub { font-size: 18px; opacity: .85; }
+  .banner .btn {
+    margin-top: 10px;
+    padding: 12px 30px;
+    font-size: 17px;
+    color: #2c1e05;
+    background: linear-gradient(180deg, #ffd75e, #d4a937);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .banner .btn:hover { transform: scale(1.05); }
+  .banner a.btn-link {
+    padding: 12px 30px;
+    font-size: 17px;
+    color: #2c1e05;
+    background: linear-gradient(180deg, #ffd75e, #d4a937);
+    border-radius: 999px;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 6px;
+  }
+
+  @media (max-width: 620px) {
+    .machine { gap: 26px; }
+    .wheel-zone { width: 260px; height: 260px; }
+    .lever { transform: scale(.8); }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/">← на главную</a>
+  <div class="balance-chip">💰 <span id="balance">0</span></div>
+</div>
+
+<h1>🎡 Колесо удачи</h1>
+
+<div class="machine">
+  <div class="wheel-zone">
+    <div class="pointer">▼</div>
+    <div class="wheel" id="wheel"><div class="hub">🎰</div></div>
+  </div>
+  <div class="lever" id="lever" title="Дёрни рычаг!">
+    <div class="lever-slot"></div>
+    <div class="lever-arm"><div class="lever-ball"></div></div>
+  </div>
+</div>
+
+<div class="stake-row">
+  <label>Ставка (мин. 50):</label>
+  <input id="stake" type="number" value="50" min="50" step="10">
+  <button class="chip" data-set="50">мин</button>
+  <button class="chip" data-set="x2">×2</button>
+  <button class="chip" data-set="max">макс</button>
+</div>
+
+<div class="legend">
+  <div>💀 ×3 — сгорела</div>
+  <div>🪙 ×2 — вернётся половина</div>
+  <div>🎲 ×6 — множитель ×1.5…×5</div>
+  <div>💎 ×1 — суперприз ×10</div>
+</div>
+
+<!-- результат -->
+<div class="banner" id="resultBanner">
+  <div class="big-emoji" id="resEmoji"></div>
+  <h2 id="resTitle"></h2>
+  <div class="sub" id="resText"></div>
+  <button class="btn" id="resOk">Ок</button>
+</div>
+
+<!-- замок: не хватает очков -->
+<div class="banner show" id="gateBanner">
+  <div class="big-emoji">🔒</div>
+  <h2>Нужен пропуск</h2>
+  <div class="sub">Минимальная ставка — 50 очков.<br>Заработай их в «Сундуках удачи»!</div>
+  <a class="btn-link" href="/chestloot/">🎁 В сундуки</a>
+</div>
+
+<script src="/assets/wallet.js"></script>
+<script>
+/* ================= НАСТРОЙКИ ================= */
+const MIN_STAKE = 50;
+const SEG_COUNT = 12;
+
+/* ================= СОСТОЯНИЕ ================= */
+let spinning = false;
+
+const wheelEl  = document.getElementById('wheel');
+const leverEl  = document.getElementById('lever');
+const stakeEl  = document.getElementById('stake');
+const balanceEl= document.getElementById('balance');
+const gateBn   = document.getElementById('gateBanner');
+const resBn    = document.getElementById('resultBanner');
+
+/* ================= ЗВУКИ (Web Audio, без файлов) — см. sounds.js ================= */
+let actx = null;
+function audioCtx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function beep(freq, dur, type = 'sine', delay = 0, vol = 0.08) {
+  const ctx = audioCtx();
+  const t = ctx.currentTime + delay;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(ctx.destination);
+  o.start(t); o.stop(t + dur + 0.05);
+}
+const sfx = {
+  lever() { beep(140, .12, 'sawtooth', 0, .1); beep(85, .2, 'square', .04, .07); },
+  tick()  { beep(850 + Math.random() * 250, .03, 'square', 0, .03); },
+  burn()  { [330, 250, 180, 120].forEach((f, i) => beep(f, .2, 'sawtooth', i * .14, .07)); },
+  half()  { beep(440, .15, 'sine'); beep(330, .2, 'sine', .15); },
+  win()   { [523, 659, 784, 1047].forEach((f, i) => beep(f, .16, 'triangle', i * .12, .09)); },
+  super() { [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => beep(f, .22, 'triangle', i * .13, .1)); }
+};
+
+/* ================= КОЛЕСО ================= */
+/* 12 сегментов: 3 сгорания, 2 половины, 6 случайных множителей, 1 суперприз */
+function rollSegments() {
+  const types = [];
+  for (let i = 0; i < 3; i++) types.push('burn');
+  for (let i = 0; i < 2; i++) types.push('half');
+  for (let i = 0; i < 6; i++) types.push('rand');
+  types.push('super');
+  // перемешиваем детерминированно размещение
+  for (let i = types.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [types[i], types[j]] = [types[j], types[i]];
+  }
+  return types.map(t => {
+    const mult = t === 'rand' ? Math.round((1.5 + Math.random() * 3.5) * 10) / 10 : null;
+    return { type: t, mult };
+  });
+}
+
+let segments = [];
+
+function buildWheel() {
+  segments = rollSegments();
+  const angle = 360 / SEG_COUNT;
+  const colors = {
+    burn:  ['#7f1d1d', '#631414'],
+    half:  ['#8a6d3b', '#715531'],
+    rand:  ['#b48b1e', '#9a7517'],
+    super: ['#5b21b6', '#43129b']
+  };
+  const counts = { burn: 0, half: 0, rand: 0, super: 0 };
+  const stops = segments.map((seg, i) => {
+    const pair = colors[seg.type];
+    const c = pair[counts[seg.type]++ % 2];
+    return `${c} ${i * angle}deg ${(i + 1) * angle}deg`;
+  }).join(', ');
+  wheelEl.style.background = `conic-gradient(${stops})`;
+
+  // подписи сегментов
+  wheelEl.querySelectorAll('.seg-label').forEach(el => el.remove());
+  segments.forEach((seg, i) => {
+    const label = {
+      burn: '💀',
+      half: '½',
+      rand: '×' + seg.mult.toFixed(1),
+      super: '×10 💎'
+    }[seg.type];
+    const el = document.createElement('div');
+    el.className = 'seg-label';
+    el.textContent = label;
+    const mid = i * angle + angle / 2;
+    const r = wheelEl.offsetWidth * 0.36;
+    el.style.transform = `translate(-50%, -50%) rotate(${mid}deg) translateY(-${r}px) rotate(${90 - mid}deg)`;
+    wheelEl.appendChild(el);
+  });
+}
+
+let rotation = 0;
+function setRotation(deg) {
+  rotation = deg;
+  wheelEl.style.transform = `rotate(${deg}deg)`;
+}
+
+/* ================= СТАВКА ================= */
+function readStake() {
+  let v = Math.floor(Number(stakeEl.value) || 0);
+  const max = DKWallet.points();
+  if (v < MIN_STAKE) v = MIN_STAKE;
+  if (v > max) v = max;
+  stakeEl.value = v;
+  return max >= MIN_STAKE ? v : null;
+}
+
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const v = chip.dataset.set;
+    const bal = DKWallet.points();
+    if (v === '50') stakeEl.value = MIN_STAKE;
+    else if (v === 'x2') stakeEl.value = Math.max(MIN_STAKE, Math.min(bal, (Number(stakeEl.value) || MIN_STAKE) * 2));
+    else stakeEl.value = Math.max(0, bal);
+  });
+});
+
+/* ================= КРУТОК ================= */
+function spin() {
+  if (spinning) return;
+  const stake = readStake();
+  if (stake === null) { gateBn.classList.add('show'); sfx.burn(); return; }
+
+  spinning = true;
+  leverEl.classList.add('cool');
+  sfx.lever();
+  leverEl.classList.add('pulled');
+
+  const left = DKWallet.spend(stake);
+  updateBalance(left);
+
+  const target = Math.floor(Math.random() * SEG_COUNT);
+  const angle = 360 / SEG_COUNT;
+  // доводим нужный сегмент под указатель сверху + 5 полных оборотов + лёгкий разброс
+  const jitter = (Math.random() - 0.5) * angle * 0.6;
+  const current = rotation % 360;
+  const dest = ((-(target * angle + angle / 2) - jitter) % 360 + 360) % 360;
+  let delta = dest - current;
+  if (delta < 0) delta += 360;
+  const total = delta + 360 * 5;
+  const startRot = rotation;
+  const DUR = 5200 + Math.random() * 800;
+
+  let lastSeg = Math.floor(((startRot % 360) + 720) / angle);
+
+  setTimeout(() => leverEl.classList.remove('pulled'), 500);
+
+  const t0 = performance.now();
+  function ease(p) { return 1 - Math.pow(1 - p, 3); }
+  (function frame(now) {
+    const p = Math.min(1, (now - t0) / DUR);
+    const deg = startRot + total * ease(p);
+    setRotation(deg);
+    const segNow = Math.floor(((-(deg % 360) % 360 + 720) % 360) / angle);
+    if (segNow !== lastSeg) { lastSeg = segNow; sfx.tick(); }
+    if (p < 1) requestAnimationFrame(frame);
+    else resolve(target, stake);
+  })(t0);
+}
+
+function resolve(i, stake) {
+  const seg = segments[i];
+  let mult = 0, emoji = '💀', title = 'Ставка сгорела';
+  if (seg.type === 'burn') { mult = 0; }
+  if (seg.type === 'half') { mult = 0.5; emoji = '🪙'; title = 'Половина вернулась'; }
+  if (seg.type === 'rand') { mult = seg.mult; emoji = '🎉'; title = 'Удача!'; }
+  if (seg.type === 'super') { mult = 10; emoji = '💎'; title = 'СУПЕРПРИЗ!'; }
+
+  const payout = Math.round(stake * mult);
+  const total = DKWallet.add(payout);
+  updateBalance(total);
+
+  const text = payout > 0
+    ? `Ставка ${stake} × ${mult} = +${payout} очков (в копилке ${total})`
+    : `Ставка ${stake} сгорела...`;
+
+  if (seg.type === 'super') sfx.super();
+  else if (payout >= stake * 1.5) sfx.win();
+  else if (payout > 0) sfx.half();
+  else sfx.burn();
+
+  document.getElementById('resEmoji').textContent = emoji;
+  document.getElementById('resTitle').textContent = title;
+  document.getElementById('resText').textContent = text;
+  resBn.classList.add('show');
+}
+
+function updateBalance(v) { balanceEl.textContent = v; }
+
+/* ================= СОБЫТИЯ ================= */
+leverEl.addEventListener('click', spin);
+document.getElementById('resOk').addEventListener('click', () => {
+  resBn.classList.remove('show');
+  spinning = false;
+  leverEl.classList.remove('cool');
+});
+DKWallet.onChange(p => {
+  updateBalance(p.points);
+  maybeGate(p.points);
+});
+
+function maybeGate(points) {
+  const blocked = points < MIN_STAKE && !spinning;
+  gateBn.classList.toggle('show', blocked);
+}
+
+/* ================= СТАРТ ================= */
+const startPoints = DKWallet.points();
+updateBalance(startPoints);
+buildWheel();
+if (startPoints >= MIN_STAKE) gateBn.classList.remove('show');
+</script>
+
+</body>
+</html>
